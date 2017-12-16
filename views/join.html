@@ -1,0 +1,106 @@
+<!-- ******************************************
+*  Author : sejong   
+*  Created On : Sat Dec 16 2017
+*  File : join.html
+******************************************* -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="sejong">
+    <title>#[[$Title$]]#</title>
+    <script>
+        var User = function(){
+            this.username = "";
+            this.userid = "";
+            this.userage = "";
+            this.userpwd = "";
+            this.useraddress = "";
+            this.validation = function(){
+                for(var key in this){
+                    if(document.getElementById(key)){ //빈값이 아닌 경우만
+                        var obj = document.getElementById(key);
+                        if(obj.getAttribute("data-val")){
+                            var len = obj.getAttribute("data-val").split(",")[0];
+                            var msg = obj.getAttribute("data-val").split(",")[1];
+                            if(this[key].length < len){
+                                alert(msg);
+                                obj.value = "";
+                                obj.focus();
+                                return;
+                            }
+                        }    
+                    }
+                }
+            };
+        };
+
+        function login(){
+            var user = new User();
+
+            for(var key in user){
+                if(document.getElementById(key)){
+                    user[key] = document.getElementById(key).value.trim();
+                }
+            }
+            // var useridObj = document.getElementById("userid");
+            // if(useridObj.getAttribute("data-val")){
+            //     var len = useridObj.getAttribute("data-val").split(",")[0];
+            //     var msg = useridObj.getAttribute("data-val").split(",")[1];
+            //     if(user.userid.length < len){
+            //         alert(msg);
+            //         useridObj.value = "";
+            //         useridObj.focus();
+            //         return;
+            //     }
+            // }
+            user.validation();
+
+            // user.username = document.getElementById("username").value;
+            // user.userage = document.getElementById("userage").value;
+            // user.userid = document.getElementById("userid").value;
+            // user.userpwd = document.getElementById("userpwd").value;
+            // user.useraddress = document.getElementById("useraddress").value;
+
+            // var username = document.getElementById("username");
+            // var userage = document.getElementById("userage");
+            // var userid = document.getElementById("userid");
+            // var userpwd = document.getElementById("userpwd");
+            // var useraddress = document.getElementById("useraddress");
+        };
+    </script>
+</head>
+<body>
+    <table border='1'>
+        <tr>
+            <td colspan="2" style="text-align: center">회원가입</td>
+        </tr>
+        <tr>
+            <td>이름 : </td>
+            <td><input type="text" name="username" id="username" data-val="2,이름은 2글자 이상이어야 합니다."></td>
+        </tr>
+        <tr>
+            <td>나이 : </td>
+            <td><input type="number" name="userage" id="userage"></td>
+        </tr>
+        <tr>
+            <td>아이디 : </td>
+            <td><input type="text" name="userid" id="userid" data-val="3,아이디가 3글자 이상이어야 합니다."></td>
+        </tr>
+        <tr>
+            <td>비번 : </td>
+            <td><input type="password" name="userpwd" id="userpwd" data-val="5,비밀번호는 5글자 이상이어야 합니다."></td>
+        </tr>
+        <tr>
+            <td>주소 : </td>
+            <td><input type="text" name="useraddress" id="useraddress"></td>
+        </tr>
+        <tr>
+            <td colspan="2" style="text-align: center">
+                <input type="button" value="회원가입" onclick="login()">
+            </td>  
+        </tr>
+    </table>
+</body>
+</html>
