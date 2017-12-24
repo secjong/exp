@@ -180,6 +180,21 @@ app.post('/api/users',(req, res, next)=>{
     });
 })
 
+app.get('/api/depart', (req,res,next)=>{
+    console.log(req.body.name);
+    console.log(req.body.diName);
+    console.log(req.query.name);
+    console.log(req.query.diName);
+    var result = {};
+    result["succeed"] = "OK";
+    var depart = {};
+    depart["diNo"] = 3;
+    depart["diName"] = "test";
+    depart["diDesc"] = "테스트반";
+    depart["diCnt"] = 2;
+    result["di"] = depart;
+    res.json(result);
+})
 
 app.listen(app.get('port'), function() {
     console.log('express running port : '+app.get('port'));
