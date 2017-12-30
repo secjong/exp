@@ -10,6 +10,8 @@ const mysql2 = require('promise-mysql');
 var connection = mysql.createConnection(dbConfig);
 var connection2 = mysql2.createConnection;
 
+const con = mysql2.createConnection(dbConfig);
+
 app.set('port', (process.env.PORT || 3000));
 
 //app.use('/', express.static(__dirname + '/../dist'));
@@ -39,9 +41,10 @@ var generateWhereValue = function(paramObj){
 var errorHandle = (err)=>{
     console.log(err);
     var result = {};
-    result["error"] = {"code" : err.code,
-    "no" : err.errno,
-    "msg" : err.sqlMessage
+    result["error"] = {
+        "code" : err.code,
+        "no" : err.errno,
+        "msg" : err.sqlMessage
     };
     return result;
 }
@@ -56,7 +59,7 @@ app.use(function(req, res, next) {
 	res.header('X-Frame-Options','SAMEORIGIN');
 	res.header('Access-Control-Allow-Credentials', true);
 	res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Methods','GET,POST');
+	res.header('Access-Control-Allow-Methods','GET,POST,DELETE');
 	res.header('Access-Control-Allow-Headers','X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
 	next();
 });
@@ -195,6 +198,90 @@ app.get('/api/depart', (req,res,next)=>{
     result["di"] = depart;
     res.json(result);
 })
+
+app.post('/api/departs', (req,res,next)=>{
+    var obj = req.body;
+    var values = [obj.diName, obj.diDesc, obj.diCnt];
+    var sql = "insert into depart_info(diName, diDesc, diCnt)";
+    sql += "values (?, ?, ?)";
+    var result = {};
+
+    con.then(con => {
+        return con.query(sql, values);
+    })
+    .then(rows=>{
+        console.log(rows);
+        result["succeed"] = "ok";
+
+        if(rows.affectedRows != 1){
+            result["succeed"] = "no";
+        }
+        res.json(result);
+    })
+
+});
+
+app.post('/api/departs/update', (req,res,next)=>{
+    var obj = req.body;
+    var values = [obj.diName, obj.diDesc, obj.diCnt, obj.diNo];
+    var sql = "update depart_info";
+    sql += " set diName = ?, ";
+    sql += " diDesc = ?, ";
+    sql += " diCnt = ?";
+    sql += " where diNo = ?";
+    var result = {};
+
+    con.then(con => {
+        return con.query(sql, values);
+    })
+    .then(rows=>{
+        console.log(rows);
+        result["succeed"] = "ok";
+
+        if(rows.affectedRows != 1){
+            result["succeed"] = "no";
+        }
+        res.json(result);
+    })
+
+});
+
+app.get('/api/departs', (req,res,next)=>{
+    var sql = "select diNo, diName, diDesc, diCnt from depart_info";
+    con.then((con)=>{
+        return con.query(sql);
+    })
+    .then(rows=>{
+        res.json(rows);
+    })
+});
+
+app.get('/api/departs/:diNo', (req,res,next)=>{
+    var sql = "select diNo, diName, diDesc, diCnt from depart_info where diNo = ?";
+    var diNo = req.params.diNo;
+    con.then((con)=>{
+        return con.query(sql,diNo);
+    })
+    .then(rows=>{
+        res.json(rows);
+    })
+});
+
+app.delete('/api/departs/:diNo', (req,res,next)=>{
+    var sql = "delete from depart_info where diNo = ?";
+    var diNo = req.params.diNo;
+    con.then(con=>{
+        return con.query(sql,diNo);
+    })
+    .then(rows=>{
+        res.json(rows);
+    })
+    .catch(errorHandle)
+    .then((result)=>{
+        console.log(result);
+        res.json(result);
+    });
+});
 
 app.listen(app.get('port'), function() {
     console.log('express running port : '+app.get('port'));
