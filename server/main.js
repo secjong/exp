@@ -205,20 +205,46 @@ app.post('/api/departs', (req,res,next)=>{
     var sql = "insert into depart_info(diName, diDesc, diCnt)";
     sql += "values (?, ?, ?)";
     var result = {};
+    var dbCon;
 
     con.then(con => {
+        dbCon = con;
         return con.query(sql, values);
     })
     .then(rows=>{
-        console.log(rows);
-        result["succeed"] = "ok";
-
-        if(rows.affectedRows != 1){
-            result["succeed"] = "no";
+        result["succeed"] = "no";
+        if(rows.affectedRows == 1){
+            var diNo = rows.insertId;
+            sql = "select ? as diNo, count(1) as diCnt from user_info where dino = ?";
+            return dbCon.query(sql, [diNo, diNo]);
         }
+
+        // if(rows.affectedRows != 1){
+        //     result["succeed"] = "no";
+        // }
+        // res.json(result);
+    })
+    .then(rows=>{
+        var result;
+        rows.map(row=>{
+            sql = "update depart_info set diCnt = ? where diNo = ?";
+            result = dbCon.query(sql, [row.diCnt, row.diNo]);
+        })
+        return result;
+    })
+    .then(rows=>{
+        if(rows.affectedRows == 1){
+            result["succeed"] = "ok";
+            result["rows"] = rows;
+        }
+    })
+    .catch(error=>{
+        console.log(error);
+        result["succeed"] = "no";
+    })
+    .then(data=>{
         res.json(result);
     })
-
 });
 
 app.post('/api/departs/update', (req,res,next)=>{
@@ -279,6 +305,57 @@ app.delete('/api/departs/:diNo', (req,res,next)=>{
     .catch(errorHandle)
     .then((result)=>{
         console.log(result);
+        res.json(result);
+    });
+});
+
+app.get('/api/userdeparts',(req,res,next)=>{
+    var sql = "select * from user_info ui, depart_info di where ui.dino = di.dino;";
+    con.then((con)=>{
+        return con.query(sql);
+    })
+    .then(rows=>{
+        res.json(rows)
+    })
+});
+
+app.post('/api/userdeparts/update', (req,res,next)=>{
+    var obj = req.body;
+    var values = [obj.username, obj.userid, obj.dino, obj.userno];
+    var sql = "update user_info";
+    sql += " set username = ?, ";
+    sql += " userid = ?, ";
+    sql += " dino = ?";
+    sql += " where userno = ?";
+    var result = {};
+    con.then(con => {
+        return con.query(sql, values);
+    })
+    .then(rows=>{
+        console.log(rows);
+        result["succeed"] = "ok";
+        if(rows.affectedRows != 1){
+            result["succeed"] = "no";
+        }
+        res.json(result);
+    })
+});
+
+app.delete('/api/userdeparts/:userno', (req,res,next)=>{
+    var sql = "delete from user_info where userno = ?";
+    var userNo = req.params.userno;
+    con.then(con=>{
+        return con.query(sql, userNo);
+    })
+    .then(rows=>{
+        console.log("rows : " , rows);
+        // if(rows.affectedRows == 1){
+        //     var sql = "update depart_info set diCnt = ? where "
+        // }
+    })
+    .catch(errorHandle)
+    .then((result)=>{
+        console.log("result : " , result);
         res.json(result);
     });
 });
